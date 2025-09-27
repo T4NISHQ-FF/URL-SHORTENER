@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting...</title>
+    <script>
+        // Handle short URLs
+        const path = window.location.pathname;
+        if (path.includes('/s/')) {
+            const shortCode = path.split('/s/')[1];
+            const urls = JSON.parse(localStorage.getItem('urls') || '{}');
+            
+            if (urls[shortCode]) {
+                // Show ad page then redirect
+                document.write(`
+                    <h2>Redirecting in 3 seconds...</h2>
+                    <div id="count">3</div>
+                    <p>Support our service</p>
+                `);
+                
+                let count = 3;
+                const timer = setInterval(() => {
+                    count--;
+                    document.getElementById('count').textContent = count;
+                    if (count <= 0) {
+                        clearInterval(timer);
+                        window.location.href = urls[shortCode];
+                    }
+                }, 1000);
+            } else {
+                document.write('Invalid short URL');
+            }
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>
