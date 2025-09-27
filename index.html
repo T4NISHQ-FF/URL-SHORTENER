@@ -1,81 +1,133 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>FF Shortener</title>
+    <title>FF Shortener - User System</title>
     <style>
         body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .tab { display: none; }
+        .active { display: block; }
         input, button { padding: 10px; margin: 5px; width: 100%; }
-        .result { margin-top: 20px; padding: 10px; background: #f0f0f0; }
     </style>
 </head>
 <body>
-    <h1>🚀 FF URL Shortener - WORKING! 🎉</h1>
-    <input type="url" id="longUrl" placeholder="Enter your long URL">
-    <button onclick="shortenUrl()">Shorten URL</button>
-    <div id="result" class="result"></div>
+    <!-- Login/Register Tabs -->
+    <div id="authTabs">
+        <button onclick="showTab('login')">Login</button>
+        <button onclick="showTab('register')">Register</button>
+    </div>
+
+    <!-- Login Tab -->
+    <div id="login" class="tab active">
+        <h3>Login to Your Account</h3>
+        <input type="text" id="loginUsername" placeholder="Username">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+
+    <!-- Register Tab -->
+    <div id="register" class="tab">
+        <h3>Create Account</h3>
+        <input type="text" id="regUsername" placeholder="Username">
+        <input type="password" id="regPassword" placeholder="Password">
+        <input type="text" id="regEmail" placeholder="Email (for payments)">
+        <button onclick="register()">Register</button>
+    </div>
+
+    <!-- Shortener (shown after login) -->
+    <div id="shortener" class="tab" style="display:none">
+        <h2>Welcome, <span id="userDisplay"></span>! 🎉</h2>
+        <p>Earnings: $<span id="userEarnings">0.00</span></p>
+        
+        <input type="url" id="longUrl" placeholder="Enter URL to shorten">
+        <button onclick="shortenUrl()">Shorten & Earn</button>
+        <div id="result"></div>
+
+        <h3>Your Short URLs:</h3>
+        <div id="userUrls"></div>
+    </div>
 
     <script>
-        // Handle redirects FIRST - before showing the page
-        const path = window.location.pathname;
-        if (path.includes('/s/')) {
-            const shortCode = path.split('/s/')[1];
-            const urls = JSON.parse(localStorage.getItem('urls') || '{}');
+        // User management
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
+            document.getElementById(tabName).style.display = 'block';
+        }
+
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const email = document.getElementById('regEmail').value;
             
-            if (urls[shortCode]) {
-                document.body.innerHTML = `
-                    <div style="text-align: center; padding: 50px;">
-                        <h2>🔄 Redirecting to your destination...</h2>
-                        <p>Please wait 3 seconds</p>
-                        <div id="count" style="font-size: 24px; color: blue;">3</div>
-                        <p><small>Support our free service by waiting</small></p>
-                    </div>
-                `;
-                
-                let count = 3;
-                const countdown = setInterval(() => {
-                    count--;
-                    document.getElementById('count').textContent = count;
-                    if (count <= 0) {
-                        clearInterval(countdown);
-                        window.location.href = urls[shortCode];
-                    }
-                }, 1000);
+            if (!username || !password) return alert('Fill all fields');
+            
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (users[username]) return alert('Username exists');
+            
+            users[username] = { password, email, earnings: 0, urls: {} };
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Account created! Login now.');
+            showTab('login');
+        }
+
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (users[username] && users[username].password === password) {
+                localStorage.setItem('currentUser', username);
+                showUserDashboard(username);
             } else {
-                document.body.innerHTML = `
-                    <div style="text-align: center; padding: 50px;">
-                        <h2>❌ Invalid short URL</h2>
-                        <a href="index.html">Back to shortener</a>
-                    </div>
-                `;
+                alert('Invalid login');
             }
         }
 
-        // Normal shortening function (only shows if not redirecting)
+        function showUserDashboard(username) {
+            document.getElementById('authTabs').style.display = 'none';
+            document.getElementById('userDisplay').textContent = username;
+            updateEarningsDisplay(username);
+            document.getElementById('shortener').style.display = 'block';
+        }
+
         function shortenUrl() {
+            const username = localStorage.getItem('currentUser');
+            if (!username) return alert('Please login');
+            
             const longUrl = document.getElementById('longUrl').value;
-            if (!longUrl) return alert('Please enter a URL');
-            if (!longUrl.startsWith('http')) {
-                longUrl = 'https://' + longUrl;
-            }
+            if (!longUrl) return alert('Enter URL');
             
             const shortCode = Math.random().toString(36).substring(2, 8);
             const shortUrl = window.location.origin + '/URL-SHORTENER/s/' + shortCode;
             
-            // Save to localStorage
-            let urls = JSON.parse(localStorage.getItem('urls') || '{}');
-            urls[shortCode] = longUrl;
-            localStorage.setItem('urls', JSON.stringify(urls));
+            // Save to user's account
+            const users = JSON.parse(localStorage.getItem('users'));
+            users[username].urls[shortCode] = {
+                longUrl: longUrl,
+                clicks: 0,
+                created: new Date().toISOString()
+            };
+            localStorage.setItem('users', JSON.stringify(users));
             
             document.getElementById('result').innerHTML = 
-                `<strong>✅ Short URL Created!</strong><br><br>
-                 <input type="text" value="${shortUrl}" style="width:100%; padding:8px;" readonly>
-                 <button onclick="copyUrl('${shortUrl}')">Copy URL</button>
-                 <br><small>Test it by clicking your new short URL!</small>`;
+                `Short URL: <input value="${shortUrl}" readonly> 
+                 <button onclick="copyUrl('${shortUrl}')">Copy</button>`;
+        }
+
+        function updateEarningsDisplay(username) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            document.getElementById('userEarnings').textContent = 
+                users[username].earnings.toFixed(2);
         }
 
         function copyUrl(url) {
             navigator.clipboard.writeText(url);
-            alert('URL copied to clipboard!');
+            alert('Copied!');
+        }
+
+        // Auto-login if already logged in
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            showUserDashboard(currentUser);
         }
     </script>
 </body>
