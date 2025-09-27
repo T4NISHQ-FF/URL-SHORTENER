@@ -1,134 +1,456 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>FF Shortener - User System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener Pro</title>
     <style>
-        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
-        .tab { display: none; }
-        .active { display: block; }
-        input, button { padding: 10px; margin: 5px; width: 100%; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-btn {
+            background: #dc3545;
+            margin-top: 10px;
+        }
+
+        .url-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .url-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
-    <!-- Login/Register Tabs -->
-    <div id="authTabs">
-        <button onclick="showTab('login')">Login</button>
-        <button onclick="showTab('register')">Register</button>
-    </div>
+    <div class="container">
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('login')">Login</button>
+            <button class="tab-btn" onclick="showTab('register')">Register</button>
+        </div>
 
-    <!-- Login Tab -->
-    <div id="login" class="tab active">
-        <h3>Login to Your Account</h3>
-        <input type="text" id="loginUsername" placeholder="Username">
-        <input type="password" id="loginPassword" placeholder="Password">
-        <button onclick="login()">Login</button>
-    </div>
+        <!-- Login Tab -->
+        <div id="login" class="tab-content active">
+            <h2>Welcome Back</h2>
+            <div class="form-group">
+                <input type="text" id="loginUsername" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="loginPassword" placeholder="Password" required>
+            </div>
+            <button onclick="login()">Login to Dashboard</button>
+        </div>
 
-    <!-- Register Tab -->
-    <div id="register" class="tab">
-        <h3>Create Account</h3>
-        <input type="text" id="regUsername" placeholder="Username">
-        <input type="password" id="regPassword" placeholder="Password">
-        <input type="text" id="regEmail" placeholder="Email (for payments)">
-        <button onclick="register()">Register</button>
-    </div>
+        <!-- Register Tab -->
+        <div id="register" class="tab-content">
+            <h2>Create Account</h2>
+            <div class="form-group">
+                <input type="text" id="regUsername" placeholder="Choose Username" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="regPassword" placeholder="Create Password" required>
+            </div>
+            <div class="form-group">
+                <input type="email" id="regEmail" placeholder="Email for Payments" required>
+            </div>
+            <button onclick="register()">Create Account</button>
+        </div>
 
-    <!-- Shortener (shown after login) -->
-    <div id="shortener" class="tab" style="display:none">
-        <h2>Welcome, <span id="userDisplay"></span>! 🎉</h2>
-        <p>Earnings: $<span id="userEarnings">0.00</span></p>
-        
-        <input type="url" id="longUrl" placeholder="Enter URL to shorten">
-        <button onclick="shortenUrl()">Shorten & Earn</button>
-        <div id="result"></div>
+        <!-- User Dashboard -->
+        <div id="dashboard" class="tab-content">
+            <div class="user-info">
+                <div>
+                    <strong>Welcome, <span id="userDisplay"></span></strong>
+                    <br>
+                    <small>Earnings: $<span id="userEarnings">0.00</span></small>
+                </div>
+                <button onclick="logout()" style="width: auto; padding: 5px 10px;">Logout</button>
+            </div>
 
-        <h3>Your Short URLs:</h3>
-        <div id="userUrls"></div>
+            <div class="form-group">
+                <input type="url" id="longUrl" placeholder="Paste your long URL here" required>
+            </div>
+            <button onclick="shortenUrl()">Shorten URL & Start Earning</button>
+            
+            <div id="result" style="margin-top: 20px;"></div>
+
+            <h3 style="margin-top: 30px;">Your Short URLs</h3>
+            <div id="userUrls" class="url-list"></div>
+
+            <!-- Admin Button (only for admin user) -->
+            <button id="adminPanelBtn" class="admin-btn" onclick="showAdminPanel()" style="display: none;">
+                Admin Panel
+            </button>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="tab-content">
+            <h2>Admin Panel</h2>
+            
+            <div class="user-info">
+                <strong>Administrator Controls</strong>
+                <button onclick="showDashboard()" style="width: auto; padding: 5px 10px;">Back to Dashboard</button>
+            </div>
+
+            <div class="form-group">
+                <h3>User Management</h3>
+                <div id="allUsers" class="url-list"></div>
+            </div>
+
+            <div class="form-group">
+                <h3>System Settings</h3>
+                <button onclick="clearAllData()">Clear All Data</button>
+                <button onclick="exportData()">Export Data</button>
+            </div>
+
+            <div class="form-group">
+                <h3>Support Contacts</h3>
+                <input type="text" id="supportEmail" placeholder="Support Email">
+                <input type="text" id="supportTelegram" placeholder="Telegram Handle">
+                <button onclick="saveSupportContacts()">Save Contacts</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // User management
+        // Fix: Initialize users storage properly
+        function initializeStorage() {
+            if (!localStorage.getItem('users')) {
+                localStorage.setItem('users', JSON.stringify({}));
+            }
+            // Create admin user if not exists
+            const users = JSON.parse(localStorage.getItem('users'));
+            if (!users.admin) {
+                users.admin = {
+                    password: 'admin123',
+                    email: 'admin@urlshortener.com',
+                    earnings: 0,
+                    urls: {},
+                    isAdmin: true
+                };
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        }
+
         function showTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
-            document.getElementById(tabName).style.display = 'block';
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
         }
 
         function register() {
-            const username = document.getElementById('regUsername').value;
-            const password = document.getElementById('regPassword').value;
-            const email = document.getElementById('regEmail').value;
+            initializeStorage();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
             
-            if (!username || !password) return alert('Fill all fields');
+            if (!username || !password || !email) {
+                alert('Please fill all fields');
+                return;
+            }
             
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            if (users[username]) return alert('Username exists');
+            const users = JSON.parse(localStorage.getItem('users'));
+            if (users[username]) {
+                alert('Username already exists');
+                return;
+            }
             
-            users[username] = { password, email, earnings: 0, urls: {} };
+            users[username] = {
+                password: password,
+                email: email,
+                earnings: 0,
+                urls: {},
+                isAdmin: username === 'admin'
+            };
+            
             localStorage.setItem('users', JSON.stringify(users));
-            alert('Account created! Login now.');
+            alert('Account created successfully! Please login.');
             showTab('login');
         }
 
         function login() {
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
+            initializeStorage();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
             
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            if (users[username] && users[username].password === password) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users[username];
+            
+            if (user && user.password === password) {
                 localStorage.setItem('currentUser', username);
-                showUserDashboard(username);
+                showDashboard();
+                
+                // Show admin button if user is admin
+                if (user.isAdmin) {
+                    document.getElementById('adminPanelBtn').style.display = 'block';
+                }
             } else {
-                alert('Invalid login');
+                alert('Invalid username or password');
             }
         }
 
-        function showUserDashboard(username) {
-            document.getElementById('authTabs').style.display = 'none';
+        function showDashboard() {
+            const username = localStorage.getItem('currentUser');
+            if (!username) return;
+            
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('dashboard').classList.add('active');
+            
             document.getElementById('userDisplay').textContent = username;
             updateEarningsDisplay(username);
-            document.getElementById('shortener').style.display = 'block';
+            loadUserUrls(username);
+        }
+
+        function showAdminPanel() {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('adminPanel').classList.add('active');
+            loadAllUsers();
         }
 
         function shortenUrl() {
             const username = localStorage.getItem('currentUser');
-            if (!username) return alert('Please login');
+            if (!username) return alert('Please login first');
             
-            const longUrl = document.getElementById('longUrl').value;
-            if (!longUrl) return alert('Enter URL');
+            const longUrl = document.getElementById('longUrl').value.trim();
+            if (!longUrl) return alert('Please enter a URL');
             
-            const shortCode = Math.random().toString(36).substring(2, 8);
+            // Add https if missing
+            const fullUrl = longUrl.startsWith('http') ? longUrl : 'https://' + longUrl;
+            
+            const shortCode = Math.random().toString(36).substring(2, 10);
             const shortUrl = window.location.origin + '/URL-SHORTENER/s/' + shortCode;
             
-            // Save to user's account
             const users = JSON.parse(localStorage.getItem('users'));
             users[username].urls[shortCode] = {
-                longUrl: longUrl,
+                longUrl: fullUrl,
                 clicks: 0,
-                created: new Date().toISOString()
+                created: new Date().toLocaleString()
             };
+            
             localStorage.setItem('users', JSON.stringify(users));
             
-            document.getElementById('result').innerHTML = 
-                `Short URL: <input value="${shortUrl}" readonly> 
-                 <button onclick="copyUrl('${shortUrl}')">Copy</button>`;
+            document.getElementById('result').innerHTML = `
+                <div style="background: #d4edda; padding: 15px; border-radius: 5px;">
+                    <strong>✅ URL Shortened Successfully!</strong><br>
+                    <input type="text" value="${shortUrl}" style="width:100%; padding:8px; margin:10px 0;" readonly>
+                    <button onclick="copyUrl('${shortUrl}')">Copy URL</button>
+                </div>
+            `;
+            
+            document.getElementById('longUrl').value = '';
+            loadUserUrls(username);
+        }
+
+        function loadUserUrls(username) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userUrls = users[username].urls;
+            const urlList = document.getElementById('userUrls');
+            
+            urlList.innerHTML = '';
+            Object.keys(userUrls).forEach(shortCode => {
+                const urlData = userUrls[shortCode];
+                urlList.innerHTML += `
+                    <div class="url-item">
+                        <div>
+                            <strong>/${shortCode}</strong><br>
+                            <small>Clicks: ${urlData.clicks} | Created: ${urlData.created}</small>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function loadAllUsers() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userList = document.getElementById('allUsers');
+            
+            userList.innerHTML = '';
+            Object.keys(users).forEach(username => {
+                const user = users[username];
+                userList.innerHTML += `
+                    <div class="url-item">
+                        <div>
+                            <strong>${username}</strong> ${user.isAdmin ? '(Admin)' : ''}<br>
+                            <small>Email: ${user.email} | Earnings: $${user.earnings} | URLs: ${Object.keys(user.urls).length}</small>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
         function updateEarningsDisplay(username) {
             const users = JSON.parse(localStorage.getItem('users'));
-            document.getElementById('userEarnings').textContent = 
-                users[username].earnings.toFixed(2);
+            document.getElementById('userEarnings').textContent = users[username].earnings.toFixed(2);
         }
 
         function copyUrl(url) {
             navigator.clipboard.writeText(url);
-            alert('Copied!');
+            alert('URL copied to clipboard!');
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('login').classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.tab-btn').classList.add('active');
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure? This will delete ALL data!')) {
+                localStorage.clear();
+                alert('All data cleared!');
+                location.reload();
+            }
+        }
+
+        function exportData() {
+            const data = localStorage.getItem('users');
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'urlshortener-data.json';
+            a.click();
+        }
+
+        function saveSupportContacts() {
+            const email = document.getElementById('supportEmail').value;
+            const telegram = document.getElementById('supportTelegram').value;
+            localStorage.setItem('supportContacts', JSON.stringify({ email, telegram }));
+            alert('Support contacts saved!');
         }
 
         // Auto-login if already logged in
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            showUserDashboard(currentUser);
-        }
+        window.onload = function() {
+            initializeStorage();
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                showDashboard();
+                const users = JSON.parse(localStorage.getItem('users'));
+                if (users[currentUser]?.isAdmin) {
+                    document.getElementById('adminPanelBtn').style.display = 'block';
+                }
+            }
+        };
     </script>
 </body>
 </html>
