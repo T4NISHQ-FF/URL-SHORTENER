@@ -1,46 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FF Shortener - Free Fire URL Shortener</title>
-    <meta name="description" content="Free URL shortener for Free Fire gamers. Shorten your links and earn money.">
-    <link rel="stylesheet" href="style.css">
+    <title>FF Shortener</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
+        input, button { padding: 10px; margin: 5px; width: 100%; }
+        .result { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🚀 FF URL Shortener</h1>
-            <p>Shorten your Free Fire links and track clicks</p>
-        </header>
+    <h1>🚀 FF URL Shortener - WORKING! 🎉</h1>
+    <input type="url" id="longUrl" placeholder="Enter your long URL">
+    <button onclick="shortenUrl()">Shorten URL</button>
+    <div id="result" class="result"></div>
 
-        <main>
-            <div class="shortener-form">
-                <input type="url" id="longUrl" placeholder="Paste your long URL here..." required>
-                <button onclick="shortenUrl()">Shorten URL</button>
-            </div>
+    <script>
+        // Handle redirects FIRST - before showing the page
+        const path = window.location.pathname;
+        if (path.includes('/s/')) {
+            const shortCode = path.split('/s/')[1];
+            const urls = JSON.parse(localStorage.getItem('urls') || '{}');
+            
+            if (urls[shortCode]) {
+                document.body.innerHTML = `
+                    <div style="text-align: center; padding: 50px;">
+                        <h2>🔄 Redirecting to your destination...</h2>
+                        <p>Please wait 3 seconds</p>
+                        <div id="count" style="font-size: 24px; color: blue;">3</div>
+                        <p><small>Support our free service by waiting</small></p>
+                    </div>
+                `;
+                
+                let count = 3;
+                const countdown = setInterval(() => {
+                    count--;
+                    document.getElementById('count').textContent = count;
+                    if (count <= 0) {
+                        clearInterval(countdown);
+                        window.location.href = urls[shortCode];
+                    }
+                }, 1000);
+            } else {
+                document.body.innerHTML = `
+                    <div style="text-align: center; padding: 50px;">
+                        <h2>❌ Invalid short URL</h2>
+                        <a href="index.html">Back to shortener</a>
+                    </div>
+                `;
+            }
+        }
 
-            <div id="result" class="result-box">
-                <!-- Results will appear here -->
-            </div>
+        // Normal shortening function (only shows if not redirecting)
+        function shortenUrl() {
+            const longUrl = document.getElementById('longUrl').value;
+            if (!longUrl) return alert('Please enter a URL');
+            if (!longUrl.startsWith('http')) {
+                longUrl = 'https://' + longUrl;
+            }
+            
+            const shortCode = Math.random().toString(36).substring(2, 8);
+            const shortUrl = window.location.origin + '/URL-SHORTENER/s/' + shortCode;
+            
+            // Save to localStorage
+            let urls = JSON.parse(localStorage.getItem('urls') || '{}');
+            urls[shortCode] = longUrl;
+            localStorage.setItem('urls', JSON.stringify(urls));
+            
+            document.getElementById('result').innerHTML = 
+                `<strong>✅ Short URL Created!</strong><br><br>
+                 <input type="text" value="${shortUrl}" style="width:100%; padding:8px;" readonly>
+                 <button onclick="copyUrl('${shortUrl}')">Copy URL</button>
+                 <br><small>Test it by clicking your new short URL!</small>`;
+        }
 
-            <div class="features">
-                <h3>💰 Start Earning Money</h3>
-                <p>Use our shortener for your FF services and earn from ad revenue!</p>
-            </div>
-        </main>
-
-        <footer>
-            <a href="privacy.html">Privacy Policy</a> | 
-            <a href="terms.html">Terms of Service</a>
-        </footer>
-    </div>
-
-    <!-- Ad Container -->
-    <div id="adContainer" class="ad-container">
-        <!-- Ads will be loaded here -->
-    </div>
-
-    <script src="script.js"></script>
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url);
+            alert('URL copied to clipboard!');
+        }
+    </script>
 </body>
 </html>
