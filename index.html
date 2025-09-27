@@ -3,26 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FF URL Shortener</title>
+    <title>FF Shortener - Free Fire URL Shortener</title>
+    <meta name="description" content="Free URL shortener for Free Fire gamers. Shorten your links and earn money.">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>🚀 FF URL Shortener</h1>
-        <p>Shorten your Free Fire service links</p>
-        
-        <div class="form-group">
-            <input type="url" id="longUrl" placeholder="Enter your long URL">
-            <button onclick="shortenUrl()">Shorten URL</button>
-        </div>
-        
-        <div id="result" class="result"></div>
-        
-        <div class="ads-container">
-            <!-- Ad space will go here -->
-        </div>
+        <header>
+            <h1>🚀 FF URL Shortener</h1>
+            <p>Shorten your Free Fire links and track clicks</p>
+        </header>
+
+        <main>
+            <div class="shortener-form">
+                <input type="url" id="longUrl" placeholder="Paste your long URL here..." required>
+                <button onclick="shortenUrl()">Shorten URL</button>
+            </div>
+
+            <div id="result" class="result-box">
+                <!-- Results will appear here -->
+            </div>
+
+            <div class="features">
+                <h3>💰 Start Earning Money</h3>
+                <p>Use our shortener for your FF services and earn from ad revenue!</p>
+            </div>
+        </main>
+
+        <footer>
+            <a href="privacy.html">Privacy Policy</a> | 
+            <a href="terms.html">Terms of Service</a>
+        </footer>
     </div>
-    
+
+    <!-- Ad Container -->
+    <div id="adContainer" class="ad-container">
+        <!-- Ads will be loaded here -->
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
