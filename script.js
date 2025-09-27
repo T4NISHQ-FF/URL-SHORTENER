@@ -1,155 +1,204 @@
-// URL Shortener with Ad Support
+// Initialize the application
 class URLShortener {
     constructor() {
-        this.urlDatabase = this.loadUrls();
-        this.adNetworks = this.initializeAdNetworks();
-        this.initializeAds();
+        this.init();
     }
 
-    loadUrls() {
-        const saved = localStorage.getItem('ffUrlDatabase');
-        return saved ? JSON.parse(saved) : {};
+    init() {
+        this.checkAuthStatus();
+        this.initializeStorage();
     }
 
-    saveUrls() {
-        localStorage.setItem('ffUrlDatabase', JSON.stringify(this.urlDatabase));
-    }
-
-    initializeAdNetworks() {
-        return {
-            propeller: {
-                active: true,
-                code: `<!-- Propeller Ads Code -->
-                <script type="text/javascript" src="//upgulpinon.com/1/02/6f/01266f1f8c9f3c18c1f42c5b4c6ceb67.js"></script>`
-            },
-            adsterra: {
-                active: false,
-                code: `<!-- Adsterra Code -->`
-            }
-        };
-    }
-
-    initializeAds() {
-        const adContainer = document.getElementById('adContainer');
-        if (this.adNetworks.propeller.active) {
-            adContainer.innerHTML = this.adNetworks.propeller.code;
+    initializeStorage() {
+        if (!localStorage.getItem('users')) {
+            localStorage.setItem('users', JSON.stringify({}));
+        }
+        if (!localStorage.getItem('settings')) {
+            localStorage.setItem('settings', JSON.stringify({
+                supportEmail: 'support@shorturl.pro',
+                telegram: '@shorturl_support',
+                adNetworks: {}
+            }));
         }
     }
 
-    generateShortCode() {
-        return Math.random().toString(36).substring(2, 10);
+    checkAuthStatus() {
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser && window.location.pathname.includes('dashboard')) {
+            this.redirectToDashboard();
+        }
     }
 
-    shortenUrl() {
-        const longUrl = document.getElementById('longUrl').value.trim();
-        
-        if (!this.isValidUrl(longUrl)) {
-            this.showResult('Please enter a valid URL starting with http:// or https://', 'error');
+    // Authentication functions
+    async register() {
+        const username = document.getElementById('regUsername').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const password = document.getElementById('regPassword').value;
+        const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+        if (!this.validateRegistration(username, email, password, confirmPassword)) {
             return;
         }
 
-        const shortCode = this.generateShortCode();
-        this.urlDatabase[shortCode] = {
-            url: longUrl,
-            clicks: 0,
-            created: new Date().toISOString()
+        const users = JSON.parse(localStorage.getItem('users'));
+        
+        if (users[email]) {
+            this.showNotification('Email already registered!', 'error');
+            return;
+        }
+
+        // Simulate email verification
+        if (!await this.sendVerificationEmail(email)) {
+            this.showNotification('Failed to send verification email', 'error');
+            return;
+        }
+
+        users[email] = {
+            username: username,
+            password: this.hashPassword(password),
+            email: email,
+            verified: false,
+            earnings: 0,
+            urls: {},
+            createdAt: new Date().toISOString(),
+            isAdmin: email === 'admin@shorturl.pro'
         };
-        
-        this.saveUrls();
-        
-        const shortUrl = `${window.location.origin}/s/${shortCode}`;
-        this.showResult(`
-            <strong>✅ URL Shortened Successfully!</strong><br><br>
-            <strong>Short URL:</strong><br>
-            <input type="text" id="shortUrlInput" value="${shortUrl}" readonly style="width:100%; padding:10px; margin:10px 0;">
-            <button onclick="copyToClipboard()" style="background:#28a745;">Copy URL</button>
-            <br><br>
-            <small>You will earn money when people click this link!</small>
-        `, 'success');
-        
-        document.getElementById('longUrl').value = '';
+
+        localStorage.setItem('users', JSON.stringify(users));
+        this.showNotification('Registration successful! Please check your email for verification.');
+        this.closeAuthModal();
     }
 
-    isValidUrl(string) {
-        try {
-            new URL(string);
-            return true;
-        } catch (_) {
+    async login() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        const users = JSON.parse(localStorage.getItem('users'));
+        const user = users[email];
+
+        if (!user || user.password !== this.hashPassword(password)) {
+            this.showNotification('Invalid email or password', 'error');
+            return;
+        }
+
+        if (!user.verified) {
+            this.showNotification('Please verify your email first', 'error');
+            return;
+        }
+
+        localStorage.setItem('currentUser', email);
+        this.redirectToDashboard();
+    }
+
+    async forgotPassword() {
+        const email = document.getElementById('forgotEmail').value.trim();
+        const users = JSON.parse(localStorage.getItem('users'));
+        
+        if (!users[email]) {
+            this.showNotification('Email not found', 'error');
+            return;
+        }
+
+        // Simulate password reset email
+        this.showNotification('Password reset link sent to your email');
+        this.closeAuthModal();
+    }
+
+    // Utility functions
+    validateRegistration(username, email, password, confirmPassword) {
+        if (password !== confirmPassword) {
+            this.showNotification('Passwords do not match', 'error');
             return false;
         }
-    }
-
-    showResult(message, type) {
-        const resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = message;
-        resultDiv.className = `result-box show ${type}`;
-    }
-
-    redirectToUrl(shortCode) {
-        if (this.urlDatabase[shortCode]) {
-            this.urlDatabase[shortCode].clicks++;
-            this.saveUrls();
-            
-            // Show ad page before redirect
-            this.showAdPage(this.urlDatabase[shortCode].url);
-        } else {
-            window.location.href = '/404.html';
+        if (password.length < 6) {
+            this.showNotification('Password must be at least 6 characters', 'error');
+            return false;
         }
+        if (!this.isValidEmail(email)) {
+            this.showNotification('Please enter a valid email', 'error');
+            return false;
+        }
+        return true;
     }
 
-    showAdPage(destinationUrl) {
-        document.body.innerHTML = `
-            <div class="ad-redirect-page">
-                <div class="ad-container">
-                    <h2>🔄 Redirecting...</h2>
-                    <p>Please wait while we prepare your destination</p>
-                    <div class="countdown">5</div>
-                    <div id="adSpace">
-                        <!-- Ads will show here -->
-                        ${this.adNetworks.propeller.code}
-                    </div>
-                    <p><small>Support our service by viewing this ad</small></p>
-                </div>
-            </div>
-        `;
-
-        let seconds = 5;
-        const countdownElement = document.querySelector('.countdown');
-        const countdown = setInterval(() => {
-            seconds--;
-            countdownElement.textContent = seconds;
-            if (seconds <= 0) {
-                clearInterval(countdown);
-                window.location.href = destinationUrl;
-            }
-        }, 1000);
+    isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
-}
 
-// Utility functions
-function copyToClipboard() {
-    const copyText = document.getElementById('shortUrlInput');
-    copyText.select();
-    copyText.setSelectionRange(0, 99999);
-    document.execCommand('copy');
-    alert('URL copied to clipboard!');
-}
+    hashPassword(password) {
+        // Simple hash for demo (use proper encryption in production)
+        return btoa(password);
+    }
 
-function shortenUrl() {
-    window.shortener.shortenUrl();
-}
+    async sendVerificationEmail(email) {
+        // Simulate email sending
+        return new Promise(resolve => setTimeout(() => resolve(true), 1000));
+    }
 
-// Handle short URL redirects
-function handleShortUrl() {
-    const path = window.location.pathname;
-    if (path.startsWith('/s/')) {
-        const shortCode = path.split('/s/')[1];
-        window.shortener.redirectToUrl(shortCode);
+    redirectToDashboard() {
+        window.location.href = 'dashboard.html';
+    }
+
+    showNotification(message, type = 'success') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
     }
 }
 
-// Initialize when page loads
-window.addEventListener('load', () => {
-    window.shortener = new URLShortener();
-    handleShortUrl();
+// Modal management
+function showAuthModal(tab = 'login') {
+    const modal = document.getElementById('authModal');
+    modal.style.display = 'block';
+    switchAuthTab(tab);
+}
+
+function closeAuthModal() {
+    document.getElementById('authModal').style.display = 'none';
+}
+
+function switchAuthTab(tabName) {
+    // Hide all forms
+    document.querySelectorAll('.auth-form').forEach(form => {
+        form.classList.remove('active');
+    });
+    
+    // Show selected form
+    document.getElementById(tabName + 'Form').classList.add('active');
+    
+    // Update tabs
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+// Global functions
+function login() {
+    new URLShortener().login();
+}
+
+function register() {
+    new URLShortener().register();
+}
+
+function forgotPassword() {
+    new URLShortener().forgotPassword();
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('authModal');
+    if (event.target === modal) {
+        closeAuthModal();
+    }
+}
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', () => {
+    new URLShortener();
 });
