@@ -3,464 +3,1094 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL Shortener Pro</title>
+    <title>ShortURL Pro - Premium URL Shortener</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        
+
+        :root {
+            --primary: #0066ff;
+            --primary-dark: #0052cc;
+            --secondary: #00cc88;
+            --dark: #1a1a2e;
+            --darker: #0f0f23;
+            --light: #ffffff;
+            --gray: #8c8ca1;
+            --success: #00cc88;
+            --error: #ff4444;
+        }
+
         body {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
             min-height: 100vh;
-            padding: 20px;
         }
-        
-        .container {
-            max-width: 500px;
-            margin: 50px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-        }
-        
-        .tabs {
+
+        /* Navigation */
+        .navbar {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
             display: flex;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #eee;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
         }
-        
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--secondary);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
             border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 102, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 6rem 2rem 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--light), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Auth Modal */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 35, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-box {
+            background: var(--dark);
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 2rem;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 0.75rem;
             background: none;
-            font-size: 16px;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
         }
-        
-        .tab.active {
-            border-bottom: 3px solid #667eea;
-            color: #667eea;
-            font-weight: bold;
+
+        .auth-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
         }
-        
-        .form {
+
+        .auth-form {
             display: none;
         }
-        
-        .form.active {
+
+        .auth-form.active {
             display: block;
         }
-        
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+
+        .form-group {
+            margin-bottom: 1.5rem;
         }
-        
-        button {
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .form-group input {
             width: 100%;
-            padding: 12px;
-            background: #667eea;
+            padding: 1rem;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
             color: white;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            color: var(--gray);
+            font-size: 1.5rem;
             cursor: pointer;
-            margin-top: 10px;
         }
-        
-        button:hover {
-            background: #5a6fd8;
-        }
-        
+
+        /* Dashboard */
         .dashboard {
             display: none;
         }
-        
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .shortener-card {
+            background: rgba(255,255,255,0.05);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .url-list {
+            background: rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
         .url-item {
-            background: #f9f9f9;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        
+
+        .url-item:last-child {
+            border-bottom: none;
+        }
+
+        .url-info {
+            flex: 1;
+        }
+
+        .url-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            display: none;
+        }
+
+        /* Notifications */
         .notification {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            text-align: center;
+            position: fixed;
+            top: 100px;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            z-index: 3000;
+            animation: slideInRight 0.3s ease;
+            max-width: 400px;
         }
-        
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+
+        .notification.success {
+            background: var(--success);
         }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+
+        .notification.error {
+            background: var(--error);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            
+            .nav-links {
+                gap: 1rem;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .container {
+                padding: 5rem 1rem 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Authentication Section -->
-        <div id="authSection">
-            <h1>🔗 URL Shortener</h1>
-            
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('login')">Login</button>
-                <button class="tab" onclick="showTab('register')">Register</button>
-            </div>
-            
-            <!-- Login Form -->
-            <div id="loginForm" class="form active">
-                <input type="email" id="loginEmail" placeholder="Email Address">
-                <input type="password" id="loginPassword" placeholder="Password">
-                <button onclick="login()">Login</button>
-                <p style="text-align: center; margin-top: 10px;">
-                    <a href="#" onclick="showTab('forgot')">Forgot Password?</a>
-                </p>
-            </div>
-            
-            <!-- Register Form -->
-            <div id="registerForm" class="form">
-                <input type="text" id="regUsername" placeholder="Username">
-                <input type="email" id="regEmail" placeholder="Email Address">
-                <input type="password" id="regPassword" placeholder="Password">
-                <input type="password" id="regConfirm" placeholder="Confirm Password">
-                <button onclick="register()">Create Account</button>
-            </div>
-            
-            <!-- Forgot Password Form -->
-            <div id="forgotForm" class="form">
-                <input type="email" id="forgotEmail" placeholder="Enter your email">
-                <button onclick="forgotPassword()">Send Reset Link</button>
-                <p style="text-align: center; margin-top: 10px;">
-                    <a href="#" onclick="showTab('login')">Back to Login</a>
-                </p>
-            </div>
-            
-            <div id="authMessage"></div>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">🔗 ShortURL Pro</div>
+        <div class="nav-links">
+            <a href="#" onclick="showSection('home')">Home</a>
+            <a href="#" onclick="showSection('features')">Features</a>
+            <a href="#" onclick="showSection('pricing')">Pricing</a>
+            <a href="#" onclick="showAuthModal('login')">Login</a>
+            <button class="btn btn-primary" onclick="showAuthModal('register')">Get Started</button>
         </div>
-        
-        <!-- Dashboard Section -->
-        <div id="dashboard" class="dashboard">
-            <h1>Welcome, <span id="userName"></span>! 👋</h1>
-            
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                <strong>Earnings: $<span id="userEarnings">0.00</span></strong> | 
-                <strong>URLs: <span id="urlCount">0</span></strong> |
-                <strong>Clicks: <span id="clickCount">0</span></strong>
-            </div>
-            
-            <input type="url" id="longUrl" placeholder="Paste long URL here">
-            <button onclick="shortenUrl()">Shorten URL</button>
-            
-            <div id="result" style="margin: 20px 0;"></div>
-            
-            <h3>Your Short URLs:</h3>
-            <div id="urlList"></div>
-            
-            <button onclick="logout()" style="background: #dc3545; margin-top: 20px;">Logout</button>
-            <button onclick="showAdmin()" style="background: #28a745; margin-top: 10px;">Admin Panel</button>
-        </div>
-        
-        <!-- Admin Panel -->
-        <div id="adminPanel" class="dashboard">
-            <h1>Admin Panel 👨‍💼</h1>
-            
-            <div id="adminContent">
-                <h3>All Users:</h3>
-                <div id="userList"></div>
-                
-                <button onclick="clearAllData()" style="background: #dc3545;">Clear All Data</button>
-                <button onclick="exportData()" style="background: #17a2b8;">Export Data</button>
-                <button onclick="showDashboard()" style="background: #6c757d;">Back to Dashboard</button>
+    </nav>
+
+    <!-- Home Section -->
+    <div id="home" class="container">
+        <div class="hero">
+            <h1>Shorten Links, Generate Revenue</h1>
+            <p>Professional URL shortener with advanced analytics, custom domains, and real-time revenue tracking.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="showAuthModal('register')">Start Earning Now</button>
+                <button class="btn btn-secondary" onclick="showSection('features')">View Features</button>
             </div>
         </div>
     </div>
 
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="container dashboard">
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div>
+                    <h2>Welcome, <span id="userName">User</span>! 👋</h2>
+                    <p style="color: var(--gray);">Ready to shorten some URLs?</p>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-secondary" onclick="logout()">Logout</button>
+                <button class="btn btn-primary" onclick="showAdminPanel()" id="adminBtn" style="display: none;">Admin Panel</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalClicks">0</div>
+                <div>Total Clicks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$<span id="totalEarnings">0.00</span></div>
+                <div>Total Earnings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalUrls">0</div>
+                <div>Short URLs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="todayClicks">0</div>
+                <div>Today's Clicks</div>
+            </div>
+        </div>
+
+        <!-- URL Shortener -->
+        <div class="shortener-card">
+            <h3 style="margin-bottom: 1.5rem;">Create Short URL</h3>
+            <div class="form-group">
+                <input type="url" id="longUrl" placeholder="https://example.com/very-long-url">
+            </div>
+            <button class="btn btn-primary" onclick="shortenUrl()">Shorten URL & Start Earning</button>
+            <div id="shortenResult" style="margin-top: 1rem;"></div>
+        </div>
+
+        <!-- URL List -->
+        <div class="url-list">
+            <h3 style="margin-bottom: 1.5rem;">Your Short URLs</h3>
+            <div id="urlsList">
+                <p style="text-align: center; color: var(--gray); padding: 2rem;">No URLs created yet. Create your first one above!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="container admin-panel">
+        <div class="dashboard-header">
+            <h2>Admin Panel 👨‍💼</h2>
+            <button class="btn btn-secondary" onclick="showDashboard()">Back to Dashboard</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="adminTotalUsers">0</div>
+                <div>Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="adminTotalUrls">0</div>
+                <div>Total URLs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$<span id="adminTotalEarnings">0.00</span></div>
+                <div>Platform Earnings</div>
+            </div>
+        </div>
+
+        <div class="url-list">
+            <h3 style="margin-bottom: 1.5rem;">User Management</h3>
+            <div id="usersList"></div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-box">
+            <button class="close-btn" onclick="hideAuthModal()">&times;</button>
+            
+            <div class="auth-header">
+                <h2>Welcome Back</h2>
+                <p style="color: var(--gray);">Sign in to your account</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+                <button class="auth-tab" onclick="switchAuthTab('forgot')">Forgot Password</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active" onsubmit="event.preventDefault(); login();">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form" onsubmit="event.preventDefault(); register();">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="regUsername" placeholder="Choose a username" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="regEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="regConfirm" placeholder="Confirm your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+            </form>
+
+            <!-- Forgot Password Form -->
+            <form id="forgotForm" class="auth-form" onsubmit="event.preventDefault(); forgotPassword();">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="forgotEmail" placeholder="Enter your email" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Send Reset Link</button>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Initialize storage
-        function init() {
-            if (!localStorage.getItem('users')) {
-                const users = {
-                    'admin@urlshortener.com': {
-                        username: 'admin',
-                        password: 'admin123',
-                        email: 'admin@urlshortener.com',
-                        earnings: 0,
-                        urls: {},
-                        isAdmin: true,
-                        createdAt: new Date().toISOString()
-                    }
-                };
+        // ==================== STORAGE MANAGEMENT ====================
+        class StorageManager {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                if (!localStorage.getItem('users')) {
+                    const users = {
+                        'admin@shorturl.pro': {
+                            username: 'admin',
+                            password: 'admin123',
+                            email: 'admin@shorturl.pro',
+                            earnings: 0,
+                            urls: {},
+                            isAdmin: true,
+                            createdAt: new Date().toISOString(),
+                            lastLogin: new Date().toISOString()
+                        }
+                    };
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+                
+                if (!localStorage.getItem('currentUser')) {
+                    localStorage.setItem('currentUser', '');
+                }
+
+                if (!localStorage.getItem('settings')) {
+                    localStorage.setItem('settings', JSON.stringify({
+                        cpcRate: 0.01, // $0.01 per click
+                        supportEmail: 'support@shorturl.pro'
+                    }));
+                }
+            }
+
+            getUsers() {
+                return JSON.parse(localStorage.getItem('users') || '{}');
+            }
+
+            saveUsers(users) {
                 localStorage.setItem('users', JSON.stringify(users));
             }
-            
-            // Check if user is already logged in
-            const currentUser = localStorage.getItem('currentUser');
-            if (currentUser) {
-                showDashboard();
+
+            getCurrentUser() {
+                return localStorage.getItem('currentUser');
             }
-        }
-        
-        // Tab management
-        function showTab(tabName) {
-            // Hide all forms
-            document.querySelectorAll('.form').forEach(form => {
-                form.classList.remove('active');
-            });
-            // Remove active from all tabs
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected form and activate tab
-            if (tabName === 'login') {
-                document.getElementById('loginForm').classList.add('active');
-                document.querySelectorAll('.tab')[0].classList.add('active');
-            } else if (tabName === 'register') {
-                document.getElementById('registerForm').classList.add('active');
-                document.querySelectorAll('.tab')[1].classList.add('active');
-            } else if (tabName === 'forgot') {
-                document.getElementById('forgotForm').classList.add('active');
-            }
-            
-            // Clear messages
-            document.getElementById('authMessage').innerHTML = '';
-        }
-        
-        // Authentication functions
-        function register() {
-            const username = document.getElementById('regUsername').value;
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const confirm = document.getElementById('regConfirm').value;
-            
-            if (!username || !email || !password) {
-                showMessage('Please fill all fields', 'error');
-                return;
-            }
-            
-            if (password !== confirm) {
-                showMessage('Passwords do not match', 'error');
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users'));
-            
-            if (users[email]) {
-                showMessage('Email already registered', 'error');
-                return;
-            }
-            
-            users[email] = {
-                username: username,
-                password: password, // In real app, hash this
-                email: email,
-                earnings: 0,
-                urls: {},
-                isAdmin: false,
-                createdAt: new Date().toISOString()
-            };
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            showMessage('Account created successfully! Please login.', 'success');
-            showTab('login');
-        }
-        
-        function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[email];
-            
-            if (user && user.password === password) {
+
+            setCurrentUser(email) {
                 localStorage.setItem('currentUser', email);
-                showDashboard();
-            } else {
-                showMessage('Invalid email or password', 'error');
+                if (email) {
+                    const users = this.getUsers();
+                    if (users[email]) {
+                        users[email].lastLogin = new Date().toISOString();
+                        this.saveUsers(users);
+                    }
+                }
+            }
+
+            getSettings() {
+                return JSON.parse(localStorage.getItem('settings') || '{}');
             }
         }
-        
-        function forgotPassword() {
-            const email = document.getElementById('forgotEmail').value;
-            showMessage(`Password reset link sent to ${email}`, 'success');
-        }
-        
-        function logout() {
-            localStorage.removeItem('currentUser');
-            showAuth();
-        }
-        
-        // URL shortening
-        function shortenUrl() {
-            const currentUser = localStorage.getItem('currentUser');
-            if (!currentUser) {
-                showMessage('Please login first', 'error');
-                return;
+
+        // ==================== AUTHENTICATION ====================
+        class AuthManager {
+            constructor(storage) {
+                this.storage = storage;
             }
-            
-            const longUrl = document.getElementById('longUrl').value;
-            if (!longUrl) {
-                showMessage('Please enter a URL', 'error');
-                return;
+
+            register(username, email, password, confirmPassword) {
+                if (!username || !email || !password) {
+                    throw new Error('Please fill all fields');
+                }
+
+                if (password !== confirmPassword) {
+                    throw new Error('Passwords do not match');
+                }
+
+                if (password.length < 6) {
+                    throw new Error('Password must be at least 6 characters');
+                }
+
+                const users = this.storage.getUsers();
+                
+                if (users[email]) {
+                    throw new Error('Email already registered');
+                }
+
+                users[email] = {
+                    username: username,
+                    password: password, // In production, hash this!
+                    email: email,
+                    earnings: 0,
+                    urls: {},
+                    isAdmin: false,
+                    createdAt: new Date().toISOString(),
+                    lastLogin: new Date().toISOString()
+                };
+
+                this.storage.saveUsers(users);
+                return users[email];
             }
-            
-            const shortCode = Math.random().toString(36).substring(2, 8);
-            const shortUrl = `${window.location.origin}/URL-SHORTENER/s/${shortCode}`;
-            
-            const users = JSON.parse(localStorage.getItem('users'));
-            users[currentUser].urls[shortCode] = {
-                longUrl: longUrl,
-                clicks: 0,
-                earnings: 0,
-                created: new Date().toLocaleString()
-            };
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            document.getElementById('result').innerHTML = `
-                <div class="success notification">
-                    <strong>✅ URL Shortened!</strong><br>
-                    <input type="text" value="${shortUrl}" readonly 
-                           style="width: 100%; padding: 5px; margin: 5px 0; border: 1px solid #ccc;">
-                    <button onclick="copyUrl('${shortUrl}')">Copy</button>
-                </div>
-            `;
-            
-            document.getElementById('longUrl').value = '';
-            loadDashboard();
+
+            login(email, password) {
+                const users = this.storage.getUsers();
+                const user = users[email];
+
+                if (!user || user.password !== password) {
+                    throw new Error('Invalid email or password');
+                }
+
+                this.storage.setCurrentUser(email);
+                return user;
+            }
+
+            logout() {
+                this.storage.setCurrentUser('');
+            }
+
+            forgotPassword(email) {
+                const users = this.storage.getUsers();
+                if (!users[email]) {
+                    throw new Error('Email not found');
+                }
+                // In production, send actual email
+                return true;
+            }
         }
-        
-        function copyUrl(url) {
-            navigator.clipboard.writeText(url);
-            alert('URL copied to clipboard!');
+
+        // ==================== URL MANAGEMENT ====================
+        class URLManager {
+            constructor(storage) {
+                this.storage = storage;
+            }
+
+            shortenUrl(longUrl, userEmail) {
+                if (!longUrl) {
+                    throw new Error('Please enter a URL');
+                }
+
+                if (!longUrl.startsWith('http')) {
+                    longUrl = 'https://' + longUrl;
+                }
+
+                const shortCode = this.generateShortCode();
+                const shortUrl = `${window.location.origin}/URL-SHORTENER/s/${shortCode}`;
+
+                const users = this.storage.getUsers();
+                const user = users[userEmail];
+
+                if (!user) {
+                    throw new Error('User not found');
+                }
+
+                user.urls[shortCode] = {
+                    longUrl: longUrl,
+                    shortCode: shortCode,
+                    shortUrl: shortUrl,
+                    clicks: 0,
+                    earnings: 0,
+                    created: new Date().toISOString(),
+                    lastClick: null
+                };
+
+                this.storage.saveUsers(users);
+                return user.urls[shortCode];
+            }
+
+            generateShortCode() {
+                return Math.random().toString(36).substring(2, 10);
+            }
+
+            getUrlStats(userEmail) {
+                const users = this.storage.getUsers();
+                const user = users[userEmail];
+                
+                if (!user) return { totalClicks: 0, totalEarnings: 0, totalUrls: 0, todayClicks: 0 };
+
+                let totalClicks = 0;
+                let totalEarnings = 0;
+                let todayClicks = 0;
+                const today = new Date().toDateString();
+
+                Object.values(user.urls).forEach(url => {
+                    totalClicks += url.clicks;
+                    totalEarnings += url.earnings;
+                    if (url.lastClick && new Date(url.lastClick).toDateString() === today) {
+                        todayClicks += url.clicks;
+                    }
+                });
+
+                return {
+                    totalClicks,
+                    totalEarnings,
+                    totalUrls: Object.keys(user.urls).length,
+                    todayClicks
+                };
+            }
         }
-        
-        // Dashboard functions
-        function showAuth() {
-            document.getElementById('authSection').style.display = 'block';
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'none';
-        }
-        
-        function showDashboard() {
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('adminPanel').style.display = 'none';
-            loadDashboard();
-        }
-        
-        function showAdmin() {
-            const currentUser = localStorage.getItem('currentUser');
-            const users = JSON.parse(localStorage.getItem('users'));
-            
-            if (users[currentUser] && users[currentUser].isAdmin) {
-                document.getElementById('authSection').style.display = 'none';
+
+        // ==================== UI MANAGEMENT ====================
+        class UIManager {
+            constructor(storage, auth, urlManager) {
+                this.storage = storage;
+                this.auth = auth;
+                this.urlManager = urlManager;
+            }
+
+            showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.remove();
+                }, 4000);
+            }
+
+            showAuthModal(tab = 'login') {
+                document.getElementById('authModal').style.display = 'flex';
+                this.switchAuthTab(tab);
+            }
+
+            hideAuthModal() {
+                document.getElementById('authModal').style.display = 'none';
+            }
+
+            switchAuthTab(tabName) {
+                // Hide all forms
+                document.querySelectorAll('.auth-form').forEach(form => {
+                    form.classList.remove('active');
+                });
+                
+                // Show selected form
+                document.getElementById(tabName + 'Form').classList.add('active');
+                
+                // Update tabs
+                document.querySelectorAll('.auth-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Find and activate the clicked tab
+                const tabs = document.querySelectorAll('.auth-tab');
+                for (let tab of tabs) {
+                    if (tab.textContent.toLowerCase().includes(tabName)) {
+                        tab.classList.add('active');
+                        break;
+                    }
+                }
+            }
+
+            showSection(sectionId) {
+                // Hide all sections
+                document.getElementById('home').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                loadAdminPanel();
+                document.getElementById('adminPanel').style.display = 'none';
+                
+                // Show selected section
+                document.getElementById(sectionId).style.display = 'block';
+            }
+
+            showDashboard() {
+                const currentUser = this.storage.getCurrentUser();
+                if (!currentUser) {
+                    this.showAuthModal('login');
+                    return;
+                }
+
+                this.showSection('dashboard');
+                this.loadDashboard();
+            }
+
+            loadDashboard() {
+                const currentUser = this.storage.getCurrentUser();
+                const users = this.storage.getUsers();
+                const user = users[currentUser];
+
+                if (!user) return;
+
+                // Update user info
+                document.getElementById('userName').textContent = user.username;
+                document.getElementById('userAvatar').textContent = user.username.charAt(0).toUpperCase();
+
+                // Show admin button if user is admin
+                document.getElementById('adminBtn').style.display = user.isAdmin ? 'block' : 'none';
+
+                // Update stats
+                const stats = this.urlManager.getUrlStats(currentUser);
+                document.getElementById('totalClicks').textContent = stats.totalClicks;
+                document.getElementById('totalEarnings').textContent = stats.totalEarnings.toFixed(2);
+                document.getElementById('totalUrls').textContent = stats.totalUrls;
+                document.getElementById('todayClicks').textContent = stats.todayClicks;
+
+                // Load URL list
+                this.loadUrlList();
+            }
+
+            loadUrlList() {
+                const currentUser = this.storage.getCurrentUser();
+                const users = this.storage.getUsers();
+                const user = users[currentUser];
+                const urlList = document.getElementById('urlsList');
+
+                if (!user || Object.keys(user.urls).length === 0) {
+                    urlList.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">No URLs created yet. Create your first one above!</p>';
+                    return;
+                }
+
+                let html = '';
+                Object.values(user.urls).forEach(url => {
+                    html += `
+                        <div class="url-item">
+                            <div class="url-info">
+                                <strong>${url.shortUrl}</strong>
+                                <div style="color: var(--gray); font-size: 0.9rem; margin-top: 0.25rem;">
+                                    ${url.longUrl}
+                                </div>
+                                <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">
+                                    Clicks: ${url.clicks} • Earnings: $${url.earnings.toFixed(2)} • Created: ${new Date(url.created).toLocaleDateString()}
+                                </div>
+                            </div>
+                            <div class="url-actions">
+                                <button class="btn btn-secondary btn-small" onclick="copyUrl('${url.shortUrl}')">Copy</button>
+                                <button class="btn btn-primary btn-small" onclick="viewAnalytics('${url.shortCode}')">Analytics</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                urlList.innerHTML = html;
+            }
+
+            showAdminPanel() {
+                const currentUser = this.storage.getCurrentUser();
+                const users = this.storage.getUsers();
+                const user = users[currentUser];
+
+                if (!user || !user.isAdmin) {
+                    this.showNotification('Admin access required', 'error');
+                    return;
+                }
+
+                this.showSection('adminPanel');
+                this.loadAdminPanel();
+            }
+
+            loadAdminPanel() {
+                const users = this.storage.getUsers();
+                
+                let totalUsers = 0;
+                let totalUrls = 0;
+                let totalEarnings = 0;
+
+                Object.values(users).forEach(user => {
+                    totalUsers++;
+                    totalUrls += Object.keys(user.urls).length;
+                    totalEarnings += user.earnings;
+                });
+
+                document.getElementById('adminTotalUsers').textContent = totalUsers;
+                document.getElementById('adminTotalUrls').textContent = totalUrls;
+                document.getElementById('adminTotalEarnings').textContent = totalEarnings.toFixed(2);
+
+                // Load users list
+                let usersHtml = '';
+                Object.entries(users).forEach(([email, user]) => {
+                    usersHtml += `
+                        <div class="url-item">
+                            <div class="url-info">
+                                <strong>${user.username} ${user.isAdmin ? '(Admin)' : ''}</strong>
+                                <div style="color: var(--gray); font-size: 0.9rem; margin-top: 0.25rem;">
+                                    ${email}
+                                </div>
+                                <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">
+                                    URLs: ${Object.keys(user.urls).length} • Earnings: $${user.earnings.toFixed(2)} • Joined: ${new Date(user.createdAt).toLocaleDateString()}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('usersList').innerHTML = usersHtml;
+            }
+        }
+
+        // ==================== INITIALIZATION ====================
+        const storage = new StorageManager();
+        const auth = new AuthManager(storage);
+        const urlManager = new URLManager(storage);
+        const ui = new UIManager(storage, auth, urlManager);
+
+        // ==================== GLOBAL FUNCTIONS ====================
+        function showAuthModal(tab) {
+            ui.showAuthModal(tab);
+        }
+
+        function hideAuthModal() {
+            ui.hideAuthModal();
+        }
+
+        function switchAuthTab(tabName) {
+            ui.switchAuthTab(tabName);
+        }
+
+        function register() {
+            try {
+                const username = document.getElementById('regUsername').value;
+                const email = document.getElementById('regEmail').value;
+                const password = document.getElementById('regPassword').value;
+                const confirm = document.getElementById('regConfirm').value;
+
+                auth.register(username, email, password, confirm);
+                ui.showNotification('Account created successfully! Please login.');
+                ui.hideAuthModal();
+                ui.switchAuthTab('login');
+                
+                // Clear form
+                document.getElementById('regUsername').value = '';
+                document.getElementById('regEmail').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regConfirm').value = '';
+            } catch (error) {
+                ui.showNotification(error.message, 'error');
+            }
+        }
+
+        function login() {
+            try {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+
+                auth.login(email, password);
+                ui.showNotification('Login successful!');
+                ui.hideAuthModal();
+                ui.showDashboard();
+                
+                // Clear form
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+            } catch (error) {
+                ui.showNotification(error.message, 'error');
+            }
+        }
+
+        function forgotPassword() {
+            try {
+                const email = document.getElementById('forgotEmail').value;
+                auth.forgotPassword(email);
+                ui.showNotification('Password reset link sent to your email');
+                ui.hideAuthModal();
+            } catch (error) {
+                ui.showNotification(error.message, 'error');
+            }
+        }
+
+        function logout() {
+            auth.logout();
+            ui.showNotification('Logged out successfully');
+            ui.showSection('home');
+        }
+
+        function shortenUrl() {
+            try {
+                const longUrl = document.getElementById('longUrl').value;
+                const currentUser = storage.getCurrentUser();
+
+                const urlData = urlManager.shortenUrl(longUrl, currentUser);
+                
+                document.getElementById('shortenResult').innerHTML = `
+                    <div style="background: rgba(0, 204, 136, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(0, 204, 136, 0.3);">
+                        <strong style="color: var(--success);">✅ URL Shortened Successfully!</strong>
+                        <div style="margin-top: 0.5rem;">
+                            <input type="text" value="${urlData.shortUrl}" readonly 
+                                   style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white;">
+                        </div>
+                        <button class="btn btn-primary" onclick="copyUrl('${urlData.shortUrl}')" style="margin-top: 0.5rem; width: 100%;">Copy URL</button>
+                    </div>
+                `;
+
+                document.getElementById('longUrl').value = '';
+                ui.loadDashboard();
+            } catch (error) {
+                ui.showNotification(error.message, 'error');
+            }
+        }
+
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                ui.showNotification('URL copied to clipboard!');
+            });
+        }
+
+        function viewAnalytics(shortCode) {
+            ui.showNotification('Analytics feature coming soon!');
+        }
+
+        function showSection(section) {
+            if (section === 'home') {
+                ui.showSection('home');
+            } else if (section === 'dashboard') {
+                ui.showDashboard();
+            }
+        }
+
+        function showDashboard() {
+            ui.showDashboard();
+        }
+
+        function showAdminPanel() {
+            ui.showAdminPanel();
+        }
+
+        // ==================== INITIALIZE APP ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is already logged in
+            const currentUser = storage.getCurrentUser();
+            if (currentUser) {
+                ui.showDashboard();
             } else {
-                alert('Admin access required');
+                ui.showSection('home');
             }
-        }
-        
-        function loadDashboard() {
-            const currentUser = localStorage.getItem('currentUser');
-            if (!currentUser) return;
-            
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[currentUser];
-            
-            document.getElementById('userName').textContent = user.username;
-            document.getElementById('userEarnings').textContent = user.earnings.toFixed(2);
-            document.getElementById('urlCount').textContent = Object.keys(user.urls).length;
-            
-            let totalClicks = 0;
-            Object.values(user.urls).forEach(url => {
-                totalClicks += url.clicks;
-            });
-            document.getElementById('clickCount').textContent = totalClicks;
-            
-            // Load URL list
-            let urlListHTML = '';
-            Object.entries(user.urls).forEach(([code, url]) => {
-                urlListHTML += `
-                    <div class="url-item">
-                        <strong>/${code}</strong><br>
-                        <small>${url.longUrl}</small><br>
-                        <small>Clicks: ${url.clicks} | Earnings: $${url.earnings.toFixed(2)}</small>
-                    </div>
-                `;
-            });
-            document.getElementById('urlList').innerHTML = urlListHTML || '<p>No URLs yet. Create your first one!</p>';
-        }
-        
-        function loadAdminPanel() {
-            const users = JSON.parse(localStorage.getItem('users'));
-            let userListHTML = '';
-            
-            Object.entries(users).forEach(([email, user]) => {
-                userListHTML += `
-                    <div class="url-item">
-                        <strong>${user.username}</strong> ${user.isAdmin ? '(Admin)' : ''}<br>
-                        <small>Email: ${email}</small><br>
-                        <small>URLs: ${Object.keys(user.urls).length} | Earnings: $${user.earnings.toFixed(2)}</small>
-                    </div>
-                `;
-            });
-            
-            document.getElementById('userList').innerHTML = userListHTML;
-        }
-        
-        // Utility functions
-        function showMessage(message, type) {
-            document.getElementById('authMessage').innerHTML = `
-                <div class="${type} notification">${message}</div>
-            `;
-        }
-        
-        function clearAllData() {
-            if (confirm('Clear ALL data? This cannot be undone!')) {
-                localStorage.clear();
-                init();
-                alert('All data cleared!');
-                showAuth();
+
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('authModal');
+                if (event.target === modal) {
+                    ui.hideAuthModal();
+                }
             }
-        }
-        
-        function exportData() {
-            const data = localStorage.getItem('users');
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'urlshortener-data.json';
-            a.click();
-        }
-        
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', init);
+        });
+
+        // Test credentials for quick access
+        console.log('Test Admin Login:');
+        console.log('Email: admin@shorturl.pro');
+        console.log('Password: admin123');
     </script>
 </body>
 </html>
